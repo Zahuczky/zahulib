@@ -6,25 +6,29 @@ function particle_shape(shape, part_num, size)
         table.insert(x_draw_cord, x)
         table.insert(y_draw_cord, y)
     end
---add the first point to the end of the table so it can wrap around to the first point at the last iteration(since it's a closed shape)
+    -- add the first point to the end of the table so it can wrap around to the first point at the last iteration(since it's a closed shape)
     x_draw_cord[#x_draw_cord+1] = x_draw_cord[1]
     y_draw_cord[#y_draw_cord+1] = y_draw_cord[1]
---the lengths of the side of the shape
+
+    -- the lengths of each side of the shape
     local distances = { }
-    for i = 1, #x_draw_cord-1 do
-        distances[i] = math.sqrt((x_draw_cord[i+1] - x_draw_cord[i])*(x_draw_cord[i+1] - x_draw_cord[i]) + (y_draw_cord[i+1] - y_draw_cord[i])*(y_draw_cord[i+1] - y_draw_cord[i]))
-    end
---all the sides combined
+    -- all the sides combined
     local length = 0
-    for k=1,#distances do
-        length = length + distances[k]
+    for i = 1, #x_draw_cord-1 do
+        local x1, y1 = x_draw_cord[i], y_draw_cord[i]
+        local x2, y2 = x_draw_cord[i+1], y_draw_cord[i+1]
+        local l = math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2))
+        length = length + l
+        distances[i] = l
     end
---amount of particles per side for equal distribution
+
+    --amount of particles per side for equal distribution
     local part_per_sides = { }
     for i=1,#distances do
         part_per_sides[i] = math.floor((distances[i]/length)*part_num + 0.5)
     end
---calculating the positions for the particles
+
+    --calculating the positions for the particles
     local x_coords = { }
     local y_coords = { }
     for i=1,#x_draw_cord-1 do
@@ -35,7 +39,7 @@ function particle_shape(shape, part_num, size)
         end
     end
 
---get center of shape
+    --get center of shape
     local origin_x = 0
     local origin_y = 0
     for i=1, #x_draw_cord-1 do
@@ -45,16 +49,10 @@ function particle_shape(shape, part_num, size)
     origin_x = origin_x / #x_draw_cord-1
     origin_y = origin_y / #y_draw_cord-1
 
---move particles to be centered around 0,0
+    -- center particles around 0,0 and scale the drawing
     for i=1,#x_coords do
-        x_coords[i] = x_coords[i] - origin_x
-        y_coords[i] = y_coords[i] - origin_y
-    end
-
---scale the drawing
-    for i=1, #x_coords do
-       x_coords[i] = x_coords[i] * size
-       y_coords[i] = y_coords[i] * size
+        x_coords[i] = (x_coords[i] - origin_x) * size
+        y_coords[i] = (y_coords[i] - origin_y) * size
     end
 
 
