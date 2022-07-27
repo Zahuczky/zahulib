@@ -14,9 +14,6 @@ function particle_shape(shape, part_num, size)
     for i = 1, #x_draw_cord-1 do
         distances[i] = math.sqrt((x_draw_cord[i+1] - x_draw_cord[i])*(x_draw_cord[i+1] - x_draw_cord[i]) + (y_draw_cord[i+1] - y_draw_cord[i])*(y_draw_cord[i+1] - y_draw_cord[i]))
     end
---was used for giving the same amount of particles to every side
-    local j=1
-    local part_per_side = part_num/#x_draw_cord-1
 --all the sides combined
     local length = 0
     for k=1,#distances do
