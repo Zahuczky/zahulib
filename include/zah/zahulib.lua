@@ -1,60 +1,69 @@
-function particle_shape(shape, part_num, size)
-    -- get the coordinates of the points of a shape
-    local x_draw_cord = { }
-    local y_draw_cord = { }
+local function coords_from_shape(shape)
+    local coords = { }
     for x,y in shape:gmatch("(-?[0-9.]+) +(-?[0-9.]+)") do
-        table.insert(x_draw_cord, x)
-        table.insert(y_draw_cord, y)
+        table.insert(coords, {x, y})
     end
-    -- add the first point to the end of the table so it can wrap around to the first point at the last iteration(since it's a closed shape)
-    x_draw_cord[#x_draw_cord+1] = x_draw_cord[1]
-    y_draw_cord[#y_draw_cord+1] = y_draw_cord[1]
+    return coords
+end
 
-    -- the lengths of each side of the shape
-    local distances = { }
-    -- all the sides combined
-    local length = 0
-    for i = 1, #x_draw_cord-1 do
-        local x1, y1 = x_draw_cord[i], y_draw_cord[i]
-        local x2, y2 = x_draw_cord[i+1], y_draw_cord[i+1]
+local function get_center(corners)
+    local origin_x = 0
+    local origin_y = 0
+    for _, corner in ipairs(corners) do
+        origin_x = (origin_x + corner)
+        origin_y = (origin_y + corner)
+    end
+    origin_x = origin_x / #corners
+    origin_y = origin_y / #corners
+
+    return origin_x, origin_y
+end
+
+function particle_shape(shape, part_num, size)
+    local draw_coords = coords_from_shape(shape)
+
+    -- calculate center before duplicating final point
+    local origin_x, origin_y = get_center(draw_coords)
+
+    -- add the first point to the end of the table so it can wrap around to the first point at the last iteration(since it's a closed shape)
+    draw_coords[#draw_coords+1] = draw_coords[1]
+
+    local side_lengths = { }
+    local total_length = 0
+    for i = 1, #draw_coords-1 do
+        local x1, y1 = table.unpack(draw_coords[i])
+        local x2, y2 = table.unpack(draw_coords[i+1])
         local l = math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2))
-        length = length + l
-        distances[i] = l
+        total_length = total_length + l
+        side_lengths[i] = l
     end
 
     --amount of particles per side for equal distribution
     local part_per_sides = { }
-    for i=1,#distances do
-        part_per_sides[i] = math.floor((distances[i]/length)*part_num + 0.5)
+    for i=1,#side_lengths do
+        part_per_sides[i] = math.floor((side_lengths[i]/total_length)*part_num + 0.5)
     end
 
     --calculating the positions for the particles
     local x_coords = { }
     local y_coords = { }
-    for i=1,#x_draw_cord-1 do
-        for j=1,part_per_sides[i] do
-            local la = j / part_per_sides[i]
-            table.insert(x_coords, ((1-la)*x_draw_cord[i]+(la)*x_draw_cord[i+1]))
-            table.insert(y_coords, ((1-la)*y_draw_cord[i]+(la)*y_draw_cord[i+1]))
+    for i, parts_on_this in ipairs(part_per_sides) do
+        -- start and end of current side
+        local x1, y1 = table.unpack(draw_coords[i])
+        local x2, y2 = table.unpack(draw_coords[i+1])
+
+        for j=1, parts_on_this do
+            local la = j / parts_on_this
+            table.insert(x_coords, ((1-la)*x1 + (la)*x2))
+            table.insert(y_coords, ((1-la)*y1 + (la)*y2))
         end
     end
-
-    --get center of shape
-    local origin_x = 0
-    local origin_y = 0
-    for i=1, #x_draw_cord-1 do
-        origin_x = (origin_x + x_draw_cord[i])
-        origin_y = (origin_y + y_draw_cord[i])
-    end
-    origin_x = origin_x / #x_draw_cord-1
-    origin_y = origin_y / #y_draw_cord-1
 
     -- center particles around 0,0 and scale the drawing
     for i=1,#x_coords do
         x_coords[i] = (x_coords[i] - origin_x) * size
         y_coords[i] = (y_coords[i] - origin_y) * size
     end
-
 
     return x_coords, y_coords
 end
