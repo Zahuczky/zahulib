@@ -22,14 +22,14 @@ function particle_shape(shape, part_num, size)
 --amount of particles per side for equal distribution
     local part_per_sides = { }
     for i=1,#distances do
-        part_per_sides[i] = (distances[i]/length)*part_num
+        part_per_sides[i] = math.floor((distances[i]/length)*part_num + 0.5)
     end
 --calculating the positions for the particles
     local x_coords = { }
     local y_coords = { }
     for i=1,#x_draw_cord-1 do
         for j=1,part_per_sides[i] do
-            local la = j / (part_per_sides[i] + 1)
+            local la = j / part_per_sides[i]
             table.insert(x_coords, ((1-la)*x_draw_cord[i]+(la)*x_draw_cord[i+1]))
             table.insert(y_coords, ((1-la)*y_draw_cord[i]+(la)*y_draw_cord[i+1]))
         end
@@ -57,12 +57,6 @@ function particle_shape(shape, part_num, size)
        y_coords[i] = y_coords[i] * size
     end
 
-    local temp_i = 1
-    for i=1,#part_per_sides do
-        table.insert(x_coords, temp_i, (x_draw_cord[i] - origin_x) * size)
-        table.insert(y_coords, temp_i, (y_draw_cord[i] - origin_y) * size)
-        temp_i = 1 + temp_i + part_per_sides[i]
-    end
 
     return x_coords, y_coords
 end
