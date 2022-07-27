@@ -73,13 +73,19 @@ end
 --recommended for shad / xshad / yshad, but can be useful for other tags that can be animated with \\t
 function tagpulse(max,start,tag,value1,value2,frequency)
     local tagstring = ""
-    local i = frequency
-    for j=0,math.floor(max/i) do
-        if j%2==0 then
-            tagstring = tagstring.."\\t("..(j*i)+start..","..((j+1)*i)+start..",\\"..tag..value1..")"
+
+    for j=0,math.floor(max/frequency) do
+        local value
+        if j % 2 == 0 then
+            value = value1
         else
-            tagstring = tagstring.."\\t("..(j*i)+start..","..((j+1)*i)+start..",\\"..tag..value2..")"
+            value = value2
         end
+
+        local t1 = start + (j * frequency)
+        local t2 = t1 + frequency
+
+        tagstring = tagstring.."\\t("..t1..","..t2..",\\"..tag..value..")"
     end
     return tagstring
 end
